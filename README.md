@@ -7,16 +7,16 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Configure
 
-*Install Github Desktop https://desktop.github.com
-*Install Visual Studio Code https://code.visualstudio.com/insiders/
-*Install Nodejs https://nodejs.org/en/ (You want the LTS version which is currently 12.16.3)
-*Open Visual Studio Code
-*Open Workspace File Menu | Open Workspace (See picture below)
-*Install Github Desktop https://desktop.github.com
-*Install Visual Studio Code https://code.visualstudio.com/insiders/
-*Install Nodejs https://nodejs.org/en/ (You want the LTS version which is currently 12.16.3)
-*Open Visual Studio Code
-*Open Workspace File Menu | Open Workspace
+* Install Github Desktop https://desktop.github.com
+* Install Visual Studio Code https://code.visualstudio.com/insiders/
+* Install Nodejs https://nodejs.org/en/ (You want the LTS version which is currently 12.16.3)
+* Open Visual Studio Code
+* Open Workspace File Menu | Open Workspace (See picture below)
+* Install Github Desktop https://desktop.github.com
+* Install Visual Studio Code https://code.visualstudio.com/insiders/
+* Install Nodejs https://nodejs.org/en/ (You want the LTS version which is currently 12.16.3)
+* Open Visual Studio Code
+* Open Workspace File Menu | Open Workspace
 
 ### `npm start`
 
