@@ -3,6 +3,8 @@ import "shaka-player/dist/controls.css";
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 class VideoPlayer extends Component {
 
+  player = null;
+
   constructor(props) {
     super(props);
 
@@ -31,8 +33,8 @@ class VideoPlayer extends Component {
     console.log('StateChangedEvent ' + type)
   }
 
-  onProgressUpdated(duration, totalBytes, bytesRemaining) {
-    console.log('duration:' + duration + ' total: ' + totalBytes + ' remaining ' + bytesRemaining)
+  onProgressUpdated(duration, totalBytes) {
+    console.log('duration:' + duration + ' total: ' + totalBytes)
   }
 
   onBufferingEvent(type, buffering) {
@@ -43,10 +45,20 @@ class VideoPlayer extends Component {
     console.log('type: ' + type + ' New Status: ' + newStatus)
   }
 
+  onLoading() {
+    console.log('Loading');
+  }
+
+  onTimelineRegionAddedEvent(detail) {
+    console.log('detail - ' + detail);
+  }
+
   componentDidMount() {
     //Link to MPEG-DASH video
+    // Sources -- https://bitmovin.com/mpeg-dash-hls-examples-sample-streams/
     const manifestUri =
-      "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
+      "https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd"
+      //"https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
     //const manifestUri = 'https://www.youtube.com/watch?v=UjtOGPJ0URM';
 
     //Getting reference to video and video container on DOM
@@ -54,9 +66,9 @@ class VideoPlayer extends Component {
     const videoContainer = this.videoContainer.current;
 
     //Initialize shaka player
-    let player = new shaka.Player(video);
+    this.player = new shaka.Player(video);
     
-		let config = player.getConfiguration();
+		let config = this.player.getConfiguration();
 		console.log(config);
 
     //Setting UI configuration JSON object
@@ -73,7 +85,7 @@ class VideoPlayer extends Component {
     ];
 
     //Setting up shaka player UI
-    const ui = new shaka.ui.Overlay(player, videoContainer, video);
+    const ui = new shaka.ui.Overlay(this.player, videoContainer, video);
     let controls = ui.getControls();
     console.log(controls);
 
@@ -81,7 +93,7 @@ class VideoPlayer extends Component {
     
 		// https://shaka-player-demo.appspot.com/docs/api/tutorial-config.html
 		// https://shaka-player-demo.appspot.com/docs/api/shaka.extern.html#.PlayerConfiguration
-		player.configure({
+		this.player.configure({
       preferredAudioLanguage: 'en-us',
       preferredTextLanguage: 'en-us',
       // streaming: {
@@ -99,34 +111,46 @@ class VideoPlayer extends Component {
     }
 
     // Listen for error events.
-    player.addEventListener("error", this.onErrorEvent);
+    this.player.addEventListener("error", this.onErrorEvent);
 
-    player.addEventListener("streaming", this.onStreamingEvent);
+    this.player.addEventListener("streaming", this.onStreamingEvent);
 
-    player.addEventListener('ProgressUpdated', this.onProgressUpdated);
+    this.player.addEventListener('ProgressUpdated', this.onProgressUpdated);
 
-    player.addEventListener('abrstatuschanged', this.onAbrStatusChangedEvent); 
+    this.player.addEventListener('abrstatuschanged', this.onAbrStatusChangedEvent); 
 
-    let network = new shaka.net.NetworkingEngine(this.onProgressUpdated);
+    this.player.addEventListener('loading', this.onLoading);
+    this.player.addEventListener('timelineregionadded', this.onTimelineRegionAddedEvent);
+
+    let network = new shaka.net.NetworkingEngine();
     console.log('Network');
     console.log(network);
 
     // Try to load a manifest.
     // This is an asynchronous process.
-    player
+    this.player
       .load(manifestUri)
-      .then(function () {
+      .then(() => {
         
         // This runs if the asynchronous load is successful.
         console.log("The video has now been loaded!");
-        let manifest = player.getManifest();
-        console.log(manifest);
+        console.log(this.player);
+        this.manifest = this.player.getManifest();
+        console.log(this.manifest);
 
-        let factory = player.getManifestParserFactory();
+        console.log('Segment');
+        let video = this.manifest.periods[0].variants[0].video
+        let segment = video.getSegmentReference();
+        console.log(segment);
+
+        let reference = video.initSegmentReference;
+        console.log(reference);
+
+        let factory = this.player.getManifestParserFactory();
         console.log("Factory");
         console.log(factory);
 
-        let stats = player.getStats();
+        let stats = this.player.getStats();
         console.log("Stats");
         console.log(stats);
 
