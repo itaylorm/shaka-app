@@ -57,9 +57,10 @@ class VideoPlayer extends Component {
     //Link to MPEG-DASH video
     // Sources -- https://bitmovin.com/mpeg-dash-hls-examples-sample-streams/
     const manifestUri =
-      "https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd"
-      //"https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
-    //const manifestUri = 'https://www.youtube.com/watch?v=UjtOGPJ0URM';
+      //"https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd"
+      "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
+    //'https://www.youtube.com/watch?v=UjtOGPJ0URM';
+    //"https://bitmovin-a.akamaihd.net/content/playhouse-vr/video/1920_9000000/dash/init.mp4";
 
     //Getting reference to video and video container on DOM
     const video = this.videoComponent.current;
@@ -129,7 +130,7 @@ class VideoPlayer extends Component {
     // Try to load a manifest.
     // This is an asynchronous process.
     this.player
-      .load(manifestUri)
+      .load(manifestUri, 30000)
       .then(() => {
         
         // This runs if the asynchronous load is successful.
