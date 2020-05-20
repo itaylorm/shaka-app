@@ -54,10 +54,9 @@ class VideoPlayer extends Component {
     const videoContainer = this.videoContainer.current;
 
     //Initialize shaka player
-    this.player = new shaka.Player(video);
-    this.setState({player : player});
+    let player = new shaka.Player(video);
     
-		let config = this.player.getConfiguration();
+		let config = player.getConfiguration();
 		console.log(config);
 
     //Setting UI configuration JSON object
@@ -74,7 +73,7 @@ class VideoPlayer extends Component {
     ];
 
     //Setting up shaka player UI
-    const ui = new shaka.ui.Overlay(this.player, videoContainer, video);
+    const ui = new shaka.ui.Overlay(player, videoContainer, video);
     let controls = ui.getControls();
     console.log(controls);
 
@@ -82,7 +81,7 @@ class VideoPlayer extends Component {
     
 		// https://shaka-player-demo.appspot.com/docs/api/tutorial-config.html
 		// https://shaka-player-demo.appspot.com/docs/api/shaka.extern.html#.PlayerConfiguration
-		this.player.configure({
+		player.configure({
       preferredAudioLanguage: 'en-us',
       preferredTextLanguage: 'en-us',
       // streaming: {
@@ -100,13 +99,13 @@ class VideoPlayer extends Component {
     }
 
     // Listen for error events.
-    this.player.addEventListener("error", this.onErrorEvent);
+    player.addEventListener("error", this.onErrorEvent);
 
-    this.player.addEventListener("streaming", this.onStreamingEvent);
+    player.addEventListener("streaming", this.onStreamingEvent);
 
-    this.player.addEventListener('ProgressUpdated', this.onProgressUpdated);
+    player.addEventListener('ProgressUpdated', this.onProgressUpdated);
 
-    this.player.addEventListener('abrstatuschanged', this.onAbrStatusChangedEvent); 
+    player.addEventListener('abrstatuschanged', this.onAbrStatusChangedEvent); 
 
     let network = new shaka.net.NetworkingEngine(this.onProgressUpdated);
     console.log('Network');
