@@ -1,18 +1,8 @@
-/*
-If you are using server-side rendering, remember that this component should be loaded on client-side
-shaka player needs to be loaded on client-side, loading it on server-side may lead to error or undesired results
-*/
-
-/*
-importing dependencies and CSS file(s) required for UI customization
-https://github.com/amit08255/shaka-player-react-with-ui-config/tree/master/with-ui-configuration
-*/
-import React from "react";
+import React, {Component} from 'react';
 import "shaka-player/dist/controls.css";
-const shaka = require("shaka-player/dist/shaka-player.ui.js");
+const shaka = require('shaka-player/dist/shaka-player.ui.js');
+class VideoPlayer extends Component {
 
-//Creating class component
-class VideoPlayer extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -37,19 +27,37 @@ class VideoPlayer extends React.PureComponent {
     console.error("Error code", error.code, "object", error);
   }
 
+  onStreamingEvent(type) {
+    console.log('StateChangedEvent ' + type)
+  }
+
+  onProgressUpdated(duration, totalBytes, bytesRemaining) {
+    console.log('duration:' + duration + ' total: ' + totalBytes + ' remaining ' + bytesRemaining)
+  }
+
+  onBufferingEvent(type, buffering) {
+    console.log('type: ' + type + ' buffering: ' + buffering);
+  }
+
+  onAbrStatusChangedEvent(type, newStatus) {
+    console.log('type: ' + type + ' New Status: ' + newStatus)
+  }
+
   componentDidMount() {
     //Link to MPEG-DASH video
     const manifestUri =
       "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
+    //const manifestUri = 'https://www.youtube.com/watch?v=UjtOGPJ0URM';
 
     //Getting reference to video and video container on DOM
     const video = this.videoComponent.current;
     const videoContainer = this.videoContainer.current;
 
     //Initialize shaka player
-    let player = new shaka.Player(video);
-
-		let config = player.getConfiguration();
+    this.player = new shaka.Player(video);
+    this.setState({player : player});
+    
+		let config = this.player.getConfiguration();
 		console.log(config);
 
     //Setting UI configuration JSON object
@@ -57,38 +65,82 @@ class VideoPlayer extends React.PureComponent {
 
     //Configuring elements to be displayed on video player control panel
     uiConfig["controlPanelElements"] = [
+      "rewind",
+      "fast_forward",
       "mute",
       "volume",
       "time_and_duration",
-      "fullscreen",
 			"overflow_menu",
     ];
 
     //Setting up shaka player UI
-    const ui = new shaka.ui.Overlay(player, videoContainer, video);
+    const ui = new shaka.ui.Overlay(this.player, videoContainer, video);
+    let controls = ui.getControls();
+    console.log(controls);
 
     ui.configure(uiConfig); //configure UI
-    ui.getControls();
-
+    
 		// https://shaka-player-demo.appspot.com/docs/api/tutorial-config.html
 		// https://shaka-player-demo.appspot.com/docs/api/shaka.extern.html#.PlayerConfiguration
-		player.configure({
-			preferredAudioLanguage: 'en-us'
-		})
+		this.player.configure({
+      preferredAudioLanguage: 'en-us',
+      preferredTextLanguage: 'en-us',
+      // streaming: {
+      //   bufferingGoal: 300
+      // },
+    })
+    
+    shaka.polyfill.installAll();
+
+    if (shaka.Player.isBrowserSupported()) {
+      console.log('Browser supported')
+    } else {
+      console.log('Browser unsupported');
+      return;
+    }
+
     // Listen for error events.
-    player.addEventListener("error", this.onErrorEvent);
+    this.player.addEventListener("error", this.onErrorEvent);
+
+    this.player.addEventListener("streaming", this.onStreamingEvent);
+
+    this.player.addEventListener('ProgressUpdated', this.onProgressUpdated);
+
+    this.player.addEventListener('abrstatuschanged', this.onAbrStatusChangedEvent); 
+
+    let network = new shaka.net.NetworkingEngine(this.onProgressUpdated);
+    console.log('Network');
+    console.log(network);
 
     // Try to load a manifest.
     // This is an asynchronous process.
     player
       .load(manifestUri)
       .then(function () {
+        
         // This runs if the asynchronous load is successful.
         console.log("The video has now been loaded!");
+        let manifest = player.getManifest();
+        console.log(manifest);
+
+        let factory = player.getManifestParserFactory();
+        console.log("Factory");
+        console.log(factory);
+
+        let stats = player.getStats();
+        console.log("Stats");
+        console.log(stats);
+
+        //manifest.addEventListener('ProgressUpdated', this.onProgressUpdated);
+        // http://v1-6-2.shaka-player-demo.appspot.com/docs/tutorial-player.html
+        //console.log(player);
+        //let segment = new shaka.media.InitSegmentReference();
+        //console.log(segment);
+
       })
       .catch(this.onError); // onError is executed if the asynchronous load fails.
   }
-
+  
   render() {
     /*
 		Returning video with a container. Remember, when setting up shaka player with custom UI, you must
@@ -98,6 +150,7 @@ class VideoPlayer extends React.PureComponent {
     return (
       <div className="video-container" ref={this.videoContainer}>
         <video
+          //width='100%'
           className="shaka-video"
           ref={this.videoComponent}
           poster="//shaka-player-demo.appspot.com/assets/poster.jpg"
